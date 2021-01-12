@@ -1,13 +1,12 @@
 package com.gateoftruth.sample
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.gateoftruth.oklibrary.FileResultCallBack
+import com.gateoftruth.oklibrary.OkException
 import com.gateoftruth.oklibrary.OkSimple
 import kotlinx.android.synthetic.main.activity_download.*
-import okhttp3.Call
 import java.io.File
 
 class DownloadActivity : AppCompatActivity() {
@@ -23,6 +22,7 @@ class DownloadActivity : AppCompatActivity() {
             OkSimple.cancelCall("123")
         }
         btn_cancel_download.setOnClickListener {
+            progress.progress = 0
             OkSimple.cancelCall("123")
             val file = File(path, name)
             if (file.exists())
@@ -37,18 +37,16 @@ class DownloadActivity : AppCompatActivity() {
 
                     ) {
 
-
-                    override fun failure(call: Call, e: Exception) {
-                        e.printStackTrace()
-                        Toast.makeText(this@DownloadActivity, "下载失败", Toast.LENGTH_SHORT).show()
-                    }
-
                     override fun finish(file: File) {
                         Toast.makeText(
                             this@DownloadActivity,
                             "download success,file length:${file.length()},file path:${file.absolutePath}",
                             Toast.LENGTH_LONG
                         ).show()
+                    }
+
+                    override fun downloadFailed(error: OkException) {
+                        Toast.makeText(this@DownloadActivity, "下载失败 ${error.errorMsg}", Toast.LENGTH_SHORT).show()
                     }
 
                     override fun downloadProgressOnMainThread(
@@ -59,12 +57,8 @@ class DownloadActivity : AppCompatActivity() {
                         val d = total.toDouble()
                         val percent = current / d
                         val realPercent = (percent * 100).toInt()
-                        Log.e("progress", "current:$current\t\ttotal:$total\t$realPercent")
+//                        Log.e("progress", "current:$current\t\ttotal:$total\t$realPercent")
                         progress.progress = realPercent
-                    }
-
-                    override fun start() {
-
                     }
 
                 })

@@ -11,10 +11,12 @@ abstract class ResultCallBack : BaseProgressListener {
 
     abstract fun response(call: Call, response: Response)
 
-    abstract fun failure(call: Call, e: Exception)
+    open fun failure(error: OkException){
+        error.exception?.printStackTrace()
+    }
 
     abstract fun responseBodyGetNull(call: Call, response: Response)
 
-    abstract fun otherException(call: Call, response: Response, e: Exception)
+//    abstract fun otherException(call: Call, response: Response, e: Exception)
 
 }

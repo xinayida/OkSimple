@@ -40,10 +40,6 @@ class PostFormActivity : AppCompatActivity() {
                     Log.e("getdata", rawBodyString)
                 }
 
-                override fun failure(call: Call, e: Exception) {
-                    e.printStackTrace()
-                }
-
                 override fun uploadProgressOnMainThread(
                     fileName: String,
                     total: Long,

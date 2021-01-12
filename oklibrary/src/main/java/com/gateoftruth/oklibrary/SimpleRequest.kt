@@ -5,6 +5,9 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.internal.headersContentLength
+import okio.appendingSink
+import okio.buffer
+import okio.sink
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
@@ -114,7 +117,7 @@ class SimpleRequest(
             override fun onFailure(call: Call, e: IOException) {
                 if (strategy.doResultCallBackFailure(call, e)) {
                     OkSimple.mainHandler.post {
-                        callBack?.failure(call, e)
+                        callBack?.failure(OkException(call, e))
                     }
                 }
                 if (OkSimple.preventContinuousRequests) {
@@ -264,45 +267,54 @@ class SimpleRequest(
 
             OkSimpleConstant.GET_BITMAP -> {
                 val bitmapBuilder = client.newBuilder()
-                val interceptors = bitmapBuilder.interceptors()
-                interceptors.add(0, object : Interceptor {
-                    override fun intercept(chain: Interceptor.Chain): Response {
-                        val request = chain.request()
-                        val url = request.url.toString()
-                        val originalResponse = chain.proceed(request)
-                        val originalResponseBody = originalResponse.body
-                        return if (originalResponseBody == null) originalResponse else originalResponse.newBuilder()
-                            .body(ProgressResponseBody(url, originalResponseBody, callBack)).build()
-
-                    }
+                bitmapBuilder.addNetworkInterceptor(Interceptor { chain ->
+                    val request = chain.request()
+                    val url = request.url.toString()
+                    val originalResponse = chain.proceed(request)
+                    val originalResponseBody = originalResponse.body
+                    if (originalResponseBody == null) originalResponse else originalResponse.newBuilder()
+                        .body(ProgressResponseBody(url, originalResponseBody, callBack,null)).build()
                 })
                 client = bitmapBuilder.build()
-            }
 
+            }
             OkSimpleConstant.DOWNLOAD_FILE -> {
                 val file = File(filePath, fileName)
                 val downloadLength = if (file.exists()) file.length() else 0
                 val downloadBean = DownloadBean()
-                var contentLength = 0L
-                downloadBean.url = requestUrl
-                try {
-                    val headRequest = requestBuilder.url(requestUrl).head().build()
-                    val downloadResponse =
-                        client.newCall(headRequest).execute()
-                    contentLength = downloadResponse.headersContentLength()
-                    requestBuilder = headRequest.newBuilder().get()
-                    downloadBean.contentLength = contentLength
-                } catch (e: IOException) {
-                    e.printStackTrace()
+                val sink = if (downloadLength > 0) {
+                    file.appendingSink().buffer()
+                } else {
+                    file.sink().buffer()
                 }
-                downloadBean.downloadLength = downloadLength
+                val fileBuilder = client.newBuilder()
+                fileBuilder.addNetworkInterceptor(Interceptor { chain ->
+                    val request = chain.request()
+                    val url = request.url.toString()
+                    val originalResponse = chain.proceed(request)
+                    val originalResponseBody = originalResponse.body
+                    if (originalResponseBody == null) originalResponse else originalResponse.newBuilder()
+                        .body(ProgressResponseBody(url, originalResponseBody, callBack, sink, downloadLength)).build()
+                })
+                client = fileBuilder.build()
+//                try {
+//                    val headRequest = requestBuilder.url(requestUrl).head().build()
+//                    val downloadResponse =
+//                        client.newCall(headRequest).execute()
+//                    contentLength = downloadResponse.headersContentLength()
+//                    requestBuilder = headRequest.newBuilder().get()
+////                    downloadBean.contentLength = contentLength
+//                } catch (e: IOException) {
+//                    e.printStackTrace()
+//                }
+//                downloadBean.downloadLength = downloadLength
+                downloadBean.sink = sink
                 downloadBean.filePath = filePath
                 downloadBean.filename = fileName
                 callBack.urlToBeanMap[requestUrl] = downloadBean
-                if (contentLength > 0) {
-                    requestBuilder.addHeader("RANGE", "bytes=$downloadLength-$contentLength")
-                }
-
+//                if (contentLength > 0) {
+                requestBuilder.addHeader("RANGE", "bytes=$downloadLength-")
+//                }
             }
 
             OkSimpleConstant.UPLOAD_FILE -> {

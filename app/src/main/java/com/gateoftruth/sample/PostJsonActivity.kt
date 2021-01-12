@@ -27,10 +27,6 @@ class PostJsonActivity : AppCompatActivity() {
 
             }
 
-            override fun failure(call: Call, e: Exception) {
-
-            }
-
         })
     }
 }

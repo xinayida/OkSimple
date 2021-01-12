@@ -22,10 +22,11 @@ abstract class BitmapResultCallBack : ResultCallBack() {
             val bitmap = BitmapFactory.decodeStream(inputStream)
             OkSimple.mainHandler.post {
                 if (bitmap == null) {
-                    otherException(
-                        call,
-                        response,
-                        IllegalArgumentException("BitmapFactory.decodeStream() function get null")
+                    failure(
+                        OkException(
+                            call,
+                            IllegalArgumentException("BitmapFactory.decodeStream() function get null"), response
+                        )
                     )
                 } else {
                     finish(bitmap)
@@ -33,16 +34,16 @@ abstract class BitmapResultCallBack : ResultCallBack() {
             }
         } catch (e: Exception) {
             OkSimple.mainHandler.post {
-                otherException(call, response, e)
+                failure(OkException(call, e, response))
             }
         }
 
 
     }
 
-    override fun otherException(call: Call, response: Response, e: Exception) {
-        failure(call, e)
-    }
+//    override fun otherException(call: Call, response: Response, e: Exception) {
+//        failure(call, e)
+//    }
 
     override fun responseBodyGetNull(call: Call, response: Response) {
 

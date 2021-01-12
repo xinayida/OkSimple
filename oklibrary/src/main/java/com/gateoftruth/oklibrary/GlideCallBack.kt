@@ -9,10 +9,6 @@ open class GlideCallBack : BitmapResultCallBack() {
 
     }
 
-    override fun failure(call: Call, e: Exception) {
-
-    }
-
     override fun response(call: Call, response: Response) {
 
     }

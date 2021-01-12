@@ -3,6 +3,7 @@ package com.gateoftruth.sample
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.gateoftruth.oklibrary.OkException
 
 import com.gateoftruth.oklibrary.OkSimple
 import kotlinx.android.synthetic.main.activity_post_params.*
@@ -35,7 +36,7 @@ class PostParamsActivity : AppCompatActivity() {
                         ).show()
                     }
 
-                    override fun failure(call: Call, e: Exception) {
+                    override fun failure(e: OkException) {
                         Toast.makeText(this@PostParamsActivity, "failure2", Toast.LENGTH_SHORT)
                             .show()
                     }
@@ -63,7 +64,7 @@ class PostParamsActivity : AppCompatActivity() {
                         ).show()
                     }
 
-                    override fun failure(call: Call, e: Exception) {
+                    override fun failure(e: OkException) {
                         Toast.makeText(this@PostParamsActivity, "failure", Toast.LENGTH_SHORT)
                             .show()
                     }

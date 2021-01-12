@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.gateoftruth.oklibrary.FileResultCallBack
+import com.gateoftruth.oklibrary.OkException
 import com.gateoftruth.oklibrary.OkSimple
 import kotlinx.android.synthetic.main.activity_multiple_download.*
 import okhttp3.Call
@@ -59,19 +60,19 @@ class MultipleDownloadActivity : AppCompatActivity() {
         val path = getExternalFilesDir("download")?.absolutePath ?: ""
         adapter.downloadBeanList.addAll(beanList)
         val callBack = object : FileResultCallBack() {
-            override fun finish(file: File) {
+            override fun downloadFailed(error: OkException) {
+                error.exception?.printStackTrace()
                 Toast.makeText(
                     this@MultipleDownloadActivity,
-                    "${file.name}下载完成",
+                    "下载失败",
                     Toast.LENGTH_SHORT
                 ).show()
             }
 
-            override fun failure(call: Call, e: Exception) {
-                e.printStackTrace()
+            override fun finish(file: File) {
                 Toast.makeText(
                     this@MultipleDownloadActivity,
-                    "下载失败",
+                    "${file.name}下载完成",
                     Toast.LENGTH_SHORT
                 ).show()
             }

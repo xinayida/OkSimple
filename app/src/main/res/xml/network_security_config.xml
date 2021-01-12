@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates
+                overridePins="true"
+                src="system"/>
+            <certificates
+                overridePins="true"
+                src="user"/>
+        </trust-anchors>
+    </base-config>
+
+    <!-- ⚠️⚠️注意：domain-config 千万不要配置 ⚠️⚠️ -->
+    <!--    <domain-config cleartextTrafficPermitted="true">-->
+    <!--        <domain includeSubdomains="true">fengkongcloud.com</domain>-->
+    <!--    </domain-config>-->
+</network-security-config>

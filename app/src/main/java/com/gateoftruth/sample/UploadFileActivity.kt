@@ -23,10 +23,6 @@ class UploadFileActivity : AppCompatActivity() {
 
             }
 
-            override fun failure(call: Call, e: Exception) {
-
-            }
-
             override fun downloadProgressOnMainThread(url: String, total: Long, current: Long) {
 
             }

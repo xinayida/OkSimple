@@ -23,17 +23,18 @@ abstract class DataCallBack<E> : ResultCallBack() {
                 if (data != null) {
                     getData(data, rawString, call, response)
                 } else {
-                    otherException(
-                        call,
-                        response,
-                        IllegalArgumentException("stringToData() function get null")
+                    failure(
+                        OkException(
+                            call,
+                            IllegalArgumentException("stringToData() function get null"), response
+                        )
                     )
                 }
 
             }
         } catch (e: Exception) {
             OkSimple.mainHandler.post {
-                otherException(call, response, e)
+                failure(OkException(call, e, response))
             }
         }
 
@@ -45,9 +46,9 @@ abstract class DataCallBack<E> : ResultCallBack() {
         return bodyString
     }
 
-    override fun otherException(call: Call, response: Response, e: Exception) {
-        failure(call, e)
-    }
+//    override fun otherException(call: Call, response: Response, e: Exception) {
+//        failure(call, e)
+//    }
 
     override fun downloadProgress(url: String, total: Long, current: Long) {
 

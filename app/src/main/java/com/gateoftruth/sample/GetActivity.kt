@@ -3,6 +3,7 @@ package com.gateoftruth.sample
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.gateoftruth.oklibrary.OkException
 
 import com.gateoftruth.oklibrary.OkSimple
 import kotlinx.android.synthetic.main.activity_get.*
@@ -36,9 +37,9 @@ class GetActivity : AppCompatActivity() {
                     tv_result.text = data.result.component1().title
                 }
 
-                override fun failure(call: Call, e: Exception) {
+                override fun failure(error: OkException) {
                     dialog.dismiss()
-                    e.printStackTrace()
+                    error.exception?.printStackTrace()
                 }
 
             })

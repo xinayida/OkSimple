@@ -14,7 +14,7 @@ class BitmapActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bitmap)
         val url =
-            "https://images.pexels.com/photos/280249/pexels-photo-280249.jpeg?cs=srgb&dl=architecture-big-ben-black-and-white-280249.jpg&fm=jpg"
+                "https://images.pexels.com/photos/280249/pexels-photo-280249.jpeg?cs=srgb&dl=architecture-big-ben-black-and-white-280249.jpg&fm=jpg"
         OkSimple.getBitmap(url).execute(object : BitmapResultCallBack() {
             override fun finish(bitmap: Bitmap) {
                 iv_bitmap.setImageBitmap(bitmap)
@@ -25,10 +25,6 @@ class BitmapActivity : AppCompatActivity() {
                 tv_bitmap_progress.text = "current:$current\t\ttotal:$total"
             }
 
-
-            override fun failure(call: Call, e: Exception) {
-
-            }
 
         })
     }
