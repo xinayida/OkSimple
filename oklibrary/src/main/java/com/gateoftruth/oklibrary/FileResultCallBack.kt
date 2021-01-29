@@ -6,25 +6,23 @@ import java.io.File
 import java.io.IOException
 
 
-abstract class FileResultCallBack :
-    ResultCallBack() {
-
-
+abstract class FileResultCallBack : ResultCallBack() {
+    var downloadBean: DownloadBean? = null
     override fun start() {
 
     }
 
-    final override fun failure(error: OkException) {
-        val url = error.call.request().url.toString()
-        val bean = urlToBeanMap.remove(url) ?: DownloadBean()
-        bean.sink?.apply {
-            flush()
+    final override fun failure(error: OkError) {
+        downloadBean?.sink?.apply {
             close()
         }
-        downloadFailed(error)
+//        val file = File(downloadBean!!.filePath)
+//        val downloadLength = if (file.exists()) file.length() else 0
+//        Log.d("Stefan", "download error ${downloadBean?.filePath} failed to: $downloadLength")
+        downloadFailed(error, downloadBean!!.filePath)
     }
 
-    abstract fun downloadFailed(error: OkException)
+    abstract fun downloadFailed(error: OkError, filePath: String)
 
 
     override fun response(call: Call, response: Response) {
@@ -33,42 +31,15 @@ abstract class FileResultCallBack :
             responseBodyGetNull(call, response)
             return
         }
-//        try {
-            val url = response.request.url.toString()
-            val bean = urlToBeanMap.remove(url)?: DownloadBean()
-//            val inputStream = responseBody.byteStream()
-            val file = File(bean.filePath, bean.filename)
-//            val randomAccessFile = RandomAccessFile(file, "rw")
-//            randomAccessFile.seek(bean.downloadLength)
-//            inputStream.use { input ->
-//                var bytesCopied: Long = bean.downloadLength
-//                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-//                var bytes = input.read(buffer)
-//                while (bytes >= 0) {
-//                    randomAccessFile.write(buffer, 0, bytes)
-//                    bytesCopied += bytes
-//                    bytes = input.read(buffer)
-////                    downloadProgress(url, bean.contentLength, bytesCopied)
-//                }
-//            }
-//            randomAccessFile.close()
-            OkSimple.mainHandler.post {
-                if (!file.exists() || file.length() == 0L) {
-                    failure(OkException(call, IOException("File Download Failure"),response))
-                } else {
-                    finish(file)
-                }
+        val file = File(downloadBean!!.filePath)
+        OkSimple.mainHandler.post {
+            if (!file.exists() || file.length() == 0L) {
+                failure(OkError(IOException("File Download Failure"), response))
+            } else {
+                finish(file)
             }
-//        } catch (e: Exception) {
-//            OkSimple.mainHandler.post {
-//                otherException(call, response, e)
-//            }
-//        }
+        }
     }
-
-//    override fun otherException(call: Call, response: Response, e: Exception) {
-//        failure(call, e)
-//    }
 
     override fun responseBodyGetNull(call: Call, response: Response) {
 

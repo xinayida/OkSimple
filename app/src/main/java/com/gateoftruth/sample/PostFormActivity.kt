@@ -31,7 +31,7 @@ class PostFormActivity : AppCompatActivity() {
         OkSimple.postForm(" http://192.168.36.100:80/").addFormPart("image", file, "image/*")
             .addFormPart("route", "uploadFile").execute(object :
                 GsonCallBack<Any>() {
-                override fun getData(
+                override fun success(
                     data: Any,
                     rawBodyString: String,
                     call: Call,

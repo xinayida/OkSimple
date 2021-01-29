@@ -8,7 +8,7 @@ class ProgressResponseBody(
     private val url: String,
     private val rawResponse: ResponseBody,
     private val baseProgressListener: BaseProgressListener,
-    private val sink: BufferedSink?,
+    private var sink: BufferedSink?,
     private val downloaded: Long? = 0L
 ) : ResponseBody() {
     private val source: BufferedSource? = null
@@ -38,6 +38,7 @@ class ProgressResponseBody(
                 } else {
                     sink?.flush()
                     sink?.close()
+                    sink = null
                 }
                 baseProgressListener.downloadProgress(
                     url,

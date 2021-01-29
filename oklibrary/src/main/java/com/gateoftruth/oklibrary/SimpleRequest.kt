@@ -4,7 +4,6 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.internal.headersContentLength
 import okio.appendingSink
 import okio.buffer
 import okio.sink
@@ -51,7 +50,7 @@ class SimpleRequest(
 
     internal var defaultFileMediaType = OkSimpleConstant.STREAM_MEDIA_TYPE_STRING.toMediaType()
 
-    internal var fileName = ""
+//    internal var fileName = ""
 
     internal var filePath = ""
 
@@ -80,15 +79,15 @@ class SimpleRequest(
                 OkSimple.statusUrlMap[tag] = true
             }
         }
-        if (type == OkSimpleConstant.DOWNLOAD_FILE) {
-            OkSimple.cachedThreadPool.execute {
-                prepare(callBack)
-                process(localVar)
-            }
-        } else {
+//        if (type == OkSimpleConstant.DOWNLOAD_FILE) {
+//            OkSimple.cachedThreadPool.execute {
+//                prepare(callBack)
+//                process(localVar)
+//            }
+//        } else {
             prepare(callBack)
             process(localVar)
-        }
+//        }
     }
 
 
@@ -104,9 +103,9 @@ class SimpleRequest(
             localTag = tag
             val cache = requestCacheControl
             requestBuilder.url(requestUrl).tag(localTag)
-            if (cache!=null){
+            if (cache != null) {
                 requestBuilder.cacheControl(cache)
-            }else if (OkSimple.networkUnavailableForceCache && !OksimpleNetworkUtil.isNetworkAvailable()){
+            } else if (OkSimple.networkUnavailableForceCache && !OksimpleNetworkUtil.isNetworkAvailable()) {
                 requestBuilder.cacheControl(CacheControl.FORCE_CACHE)
             }
             localRequestBuilder = requestBuilder
@@ -117,7 +116,7 @@ class SimpleRequest(
             override fun onFailure(call: Call, e: IOException) {
                 if (strategy.doResultCallBackFailure(call, e)) {
                     OkSimple.mainHandler.post {
-                        callBack?.failure(OkException(call, e))
+                        callBack?.failure(OkError(e))
                     }
                 }
                 if (OkSimple.preventContinuousRequests) {
@@ -279,9 +278,11 @@ class SimpleRequest(
 
             }
             OkSimpleConstant.DOWNLOAD_FILE -> {
-                val file = File(filePath, fileName)
+                val file = File(filePath)
                 val downloadLength = if (file.exists()) file.length() else 0
                 val downloadBean = DownloadBean()
+
+//                Log.d("Stefan", "download $filePath start from: $downloadLength")
                 val sink = if (downloadLength > 0) {
                     file.appendingSink().buffer()
                 } else {
@@ -297,21 +298,9 @@ class SimpleRequest(
                         .body(ProgressResponseBody(url, originalResponseBody, callBack, sink, downloadLength)).build()
                 })
                 client = fileBuilder.build()
-//                try {
-//                    val headRequest = requestBuilder.url(requestUrl).head().build()
-//                    val downloadResponse =
-//                        client.newCall(headRequest).execute()
-//                    contentLength = downloadResponse.headersContentLength()
-//                    requestBuilder = headRequest.newBuilder().get()
-////                    downloadBean.contentLength = contentLength
-//                } catch (e: IOException) {
-//                    e.printStackTrace()
-//                }
-//                downloadBean.downloadLength = downloadLength
                 downloadBean.sink = sink
                 downloadBean.filePath = filePath
-                downloadBean.filename = fileName
-                callBack.urlToBeanMap[requestUrl] = downloadBean
+                (callBack as FileResultCallBack).downloadBean = downloadBean
 //                if (contentLength > 0) {
                 requestBuilder.addHeader("RANGE", "bytes=$downloadLength-")
 //                }

@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.gateoftruth.oklibrary.FileResultCallBack
-import com.gateoftruth.oklibrary.OkException
+import com.gateoftruth.oklibrary.OkError
 import com.gateoftruth.oklibrary.OkSimple
 import kotlinx.android.synthetic.main.activity_download.*
 import java.io.File
@@ -29,7 +29,7 @@ class DownloadActivity : AppCompatActivity() {
                 file.delete()
         }
         btn_download.setOnClickListener {
-            OkSimple.downloadFile(url, name, path).apply {
+            OkSimple.downloadFile(url, File(path, name).absolutePath).apply {
                 tag = "123"
             }
                 .execute(object :
@@ -45,7 +45,7 @@ class DownloadActivity : AppCompatActivity() {
                         ).show()
                     }
 
-                    override fun downloadFailed(error: OkException) {
+                    override fun downloadFailed(error: OkError, filePath: String) {
                         Toast.makeText(this@DownloadActivity, "下载失败 ${error.errorMsg}", Toast.LENGTH_SHORT).show()
                     }
 

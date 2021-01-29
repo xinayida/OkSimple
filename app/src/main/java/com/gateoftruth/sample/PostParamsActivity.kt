@@ -3,7 +3,7 @@ package com.gateoftruth.sample
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.gateoftruth.oklibrary.OkException
+import com.gateoftruth.oklibrary.OkError
 
 import com.gateoftruth.oklibrary.OkSimple
 import kotlinx.android.synthetic.main.activity_post_params.*
@@ -23,7 +23,7 @@ class PostParamsActivity : AppCompatActivity() {
             OkSimple.post("http://api.juheapi.com/japi/toh").post(map)
                 .params("key", "a4a8acd821a6412a361310249f085d96")
                 .execute(object : GsonCallBack<ExampleBean>() {
-                    override fun getData(
+                    override fun success(
                         data: ExampleBean,
                         rawBodyString: String,
                         call: Call,
@@ -36,7 +36,7 @@ class PostParamsActivity : AppCompatActivity() {
                         ).show()
                     }
 
-                    override fun failure(e: OkException) {
+                    override fun failure(e: OkError) {
                         Toast.makeText(this@PostParamsActivity, "failure2", Toast.LENGTH_SHORT)
                             .show()
                     }
@@ -51,7 +51,7 @@ class PostParamsActivity : AppCompatActivity() {
                 .post("day", "1")
                 .post("key", "a4a8acd821a6412a361310249f085d96").execute(object :
                     GsonCallBack<ExampleBean>() {
-                    override fun getData(
+                    override fun success(
                         data: ExampleBean,
                         rawBodyString: String,
                         call: Call,
@@ -64,7 +64,7 @@ class PostParamsActivity : AppCompatActivity() {
                         ).show()
                     }
 
-                    override fun failure(e: OkException) {
+                    override fun failure(e: OkError) {
                         Toast.makeText(this@PostParamsActivity, "failure", Toast.LENGTH_SHORT)
                             .show()
                     }

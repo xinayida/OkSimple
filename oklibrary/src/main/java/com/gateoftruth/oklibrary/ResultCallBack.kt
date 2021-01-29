@@ -5,13 +5,11 @@ import okhttp3.Response
 
 abstract class ResultCallBack : BaseProgressListener {
 
-    val urlToBeanMap = hashMapOf<String, DownloadBean>()
-
     abstract fun start()
 
     abstract fun response(call: Call, response: Response)
 
-    open fun failure(error: OkException){
+    open fun failure(error: OkError) {
         error.exception?.printStackTrace()
     }
 

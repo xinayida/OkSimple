@@ -1,9 +1,8 @@
 package com.gateoftruth.oklibrary
 
-import okhttp3.Call
 import okhttp3.Response
 
-class OkException(val call: Call, val exception: Exception?, val response: Response? = null) {
+class OkError(val exception: Exception?, val response: Response? = null) {
 
     companion object {
         const val ERROR_CODE_NETWORK = -1

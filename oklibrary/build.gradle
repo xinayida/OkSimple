@@ -1,9 +1,9 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'maven-publish'
-apply plugin: 'com.jfrog.bintray'
+//apply plugin: 'maven-publish'
+//apply plugin: 'com.jfrog.bintray'
 
-def vName="2.0.3"
+def vName="1.0.0"//2.0.3
 android {
     compileSdkVersion 30
 
@@ -23,6 +23,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 
 }
 
@@ -35,44 +42,83 @@ dependencies {
     api 'com.squareup.okhttp3:okhttp:4.9.0'
 
 }
-def myArtifactId="OkSimple"
-afterEvaluate {
-    publishing{
-        publications{
-            release(MavenPublication) {
-                // Applies the component for the release build variant.
-                from components.release
 
-                // You can then customize attributes of the publication as shown below.
-                groupId = 'com.gateoftruth.library'
-                artifactId = myArtifactId
-                version = vName
+apply plugin: 'maven'
+def debugMode = false
+def myArtifactId="oksimple"
+uploadArchives {
+    repositories.mavenDeployer {
+        pom.groupId = "com.xinayida" // 唯一标识（通常为模块包名，也可以任意）
+        pom.artifactId = myArtifactId//项目名称（通常为类库模块名称，也可以任意）
+        pom.version = "1.0.0" // 版本号
+        pom.packaging = "jar"//
+        // 配置本地仓库路径，项目根目录下
+        if (debugMode) {
+            repository(url: uri('../repo-local'))
+        } else {
+//          从本地文件读取仓库账号和密码
+            File propFile = new File('local.properties')
+            if (propFile.canRead()) {
+                Properties props = new Properties()
+                props.load(new FileInputStream(propFile))
+
+                if (props != null && props.containsKey('repositoryUserName') && props.containsKey('repositoryPassword')) {
+                    def repositoryUserName = props['repositoryUserName']
+                    def repositoryPassword = props['repositoryPassword']
+
+                    //指定maven仓库url
+                    repository(url:  props['repositoryUrl']) {
+                        //nexus登录默认用户名和密码
+                        authentication(userName: repositoryUserName, password: repositoryPassword)
+                    }
+                    println '上传到远程仓库'
+                } else {
+                    println '没有发布权限'
+                }
+            } else {
+                println '缺少配置文件'
             }
         }
     }
 }
 
-//./gradlew clean build bintrayUpload
-bintray {
-    user=''
-    key=''
-    publications = ['release']
-    publish = true
-    override = true
-    pkg {
-        repo = 'public'
-        name = myArtifactId
-        desc = 'oksimple 2.0.3'
-        userOrg = 'gateoftruth'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/GateOfTruth/OkSimple'
-        publicDownloadNumbers = true
-        version {
-            name = vName
-            released = new Date()
-        }
-    }
-}
+//afterEvaluate {
+//    publishing{
+//        publications{
+//            release(MavenPublication) {
+//                // Applies the component for the release build variant.
+//                from components.release
+//
+//                // You can then customize attributes of the publication as shown below.
+//                groupId = 'com.xinayida'
+//                artifactId = myArtifactId
+//                version = vName
+//            }
+//        }
+//    }
+//}
+//
+////./gradlew clean build bintrayUpload
+//bintray {
+//    user=''
+//    key=''
+//    publications = ['release']
+//    publish = true //[Default: false] Whether version should be auto published after an upload
+//    override = true //[Default: false] Whether to override version artifacts already published
+//    pkg {
+//        repo = 'public'
+//        name = myArtifactId
+//        desc = "oksimple $vName"
+//        userOrg = 'xinayida'
+//        licenses = ['Apache-2.0']
+//        vcsUrl = 'https://github.com/xinayida/OkSimple'
+//        publicDownloadNumbers = true
+//        version {
+//            name = vName
+//            released = new Date()
+//        }
+//    }
+//}
 
 
 

@@ -18,7 +18,7 @@ class PostJsonActivity : AppCompatActivity() {
         tem.put("key2", "value2")
         tem.put("key3", "value3")
         OkSimple.postJson("http://192.168.36.100:83", tem).execute(object : GsonCallBack<Any>() {
-            override fun getData(
+            override fun success(
                 data: Any,
                 rawBodyString: String,
                 call: Call,

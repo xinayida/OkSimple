@@ -1,16 +1,58 @@
 package com.gateoftruth.oklibrary
 
 import android.app.Application
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.Response
 import org.json.JSONObject
 import java.io.File
+import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 object OkSimple {
-    var okHttpClient = OkHttpClient()
+    var okHttpClient = OkHttpClient.Builder().build()
+        set(value) {
+            field = value.newBuilder().addNetworkInterceptor(responseInterceptor()).build()
+        }
+
+    private fun responseInterceptor(): Interceptor {
+        return object : Interceptor {
+            override fun intercept(chain: Interceptor.Chain): Response {
+                val request = chain.request()
+                val response = chain.proceed(request)
+                if (response.code >= 300) {
+                    errorHandlers.forEach {
+                        it.get()?.handleError(OkError(null, response = response))
+                    }
+                }
+                return response
+            }
+        }
+    }
+
+    private val errorHandlers = mutableListOf<WeakReference<OkErrorHandler>>()
+
+    /**
+     * 注册错误处理回调
+     */
+    fun registerErrorHandler(handler: OkErrorHandler) {
+        unRegisterErrorHandler(handler)
+        errorHandlers.add(WeakReference(handler))
+    }
+
+    /**
+     * 注销错误处理回调
+     */
+    fun unRegisterErrorHandler(handler: OkErrorHandler) {
+        val iterator = errorHandlers.listIterator()
+        iterator.forEach {
+            if (it.get() == null) iterator.remove()
+            if (it.get() == handler) return
+        }
+    }
 
     val mainHandler = OksimpleHandler()
 
@@ -26,7 +68,7 @@ object OkSimple {
 
     internal val tagStrategyMap = ConcurrentHashMap<String, RequestStrategy>()
 
-    val cachedThreadPool: ExecutorService = Executors.newCachedThreadPool()
+//    val cachedThreadPool: ExecutorService = Executors.newCachedThreadPool()
 
     var networkAvailable = true
 
@@ -66,9 +108,8 @@ object OkSimple {
         return request
     }
 
-    fun downloadFile(url: String, filename: String, filePath: String): SimpleRequest {
+    fun downloadFile(url: String, filePath: String): SimpleRequest {
         val request = SimpleRequest(url, OkSimpleConstant.DOWNLOAD_FILE)
-        request.fileName = filename
         request.filePath = filePath
         return request
     }

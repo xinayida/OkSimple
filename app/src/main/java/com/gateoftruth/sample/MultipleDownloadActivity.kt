@@ -8,22 +8,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.gateoftruth.oklibrary.FileResultCallBack
-import com.gateoftruth.oklibrary.OkException
+import com.gateoftruth.oklibrary.OkError
 import com.gateoftruth.oklibrary.OkSimple
 import kotlinx.android.synthetic.main.activity_multiple_download.*
-import okhttp3.Call
 import java.io.File
-import java.util.*
 
 class MultipleDownloadActivity : AppCompatActivity() {
     val urlPositionMap = hashMapOf<String, Int>()
     val beanList = mutableListOf<DownloadBean>()
+    private lateinit var adapter: DownloadAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_multiple_download)
         recycler_multiple_download.layoutManager = LinearLayoutManager(this)
-        val adapter = DownloadAdapter(this)
+        adapter = DownloadAdapter(this)
         val urlList = listOf(
             "http://dl-ks.coolapkmarket.com/down/apk_file/2019/1029/Coolapk-9.6.3-1910291-coolapk-app-release.apk?t=1575368046&k=d5389a67fabe01c41ba81aa3cc293f2f",
             "http://imtt.dd.qq.com/16891/apk/A013F5C61B2708769B0D708AA7A25E57.apk?fsname=com.tencent.mm_7.0.9_1560.apk&csr=db5e",
@@ -59,47 +58,14 @@ class MultipleDownloadActivity : AppCompatActivity() {
         }
         val path = getExternalFilesDir("download")?.absolutePath ?: ""
         adapter.downloadBeanList.addAll(beanList)
-        val callBack = object : FileResultCallBack() {
-            override fun downloadFailed(error: OkException) {
-                error.exception?.printStackTrace()
-                Toast.makeText(
-                    this@MultipleDownloadActivity,
-                    "下载失败",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-
-            override fun finish(file: File) {
-                Toast.makeText(
-                    this@MultipleDownloadActivity,
-                    "${file.name}下载完成",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-
-            override fun downloadProgressOnMainThread(url: String, total: Long, current: Long) {
-                val percent = current / total.toDouble()
-                val realPercent = (percent * 100).toInt()
-                val adapterPosition = urlPositionMap[url]
-                if (adapterPosition != null) {
-                    Log.e("download", "${url}\t\t${realPercent}")
-                    val bean = beanList[adapterPosition]
-                    bean.progress = realPercent
-                    adapter.notifyItemChanged(adapterPosition)
-                }
-            }
-
-        }
         adapter.itemClickInterface = object : DownloadAdapter.ItemClickInterface {
             override fun itemClick(position: Int, view: View) {
                 when (view.id) {
                     R.id.btn_item_start_download -> {
                         OkSimple.downloadFile(
                             beanList[position].url,
-                            beanList[position].fileName,
-                            path
-                        )
-                            .execute(callBack)
+                            File(path, beanList[position].fileName).absolutePath
+                        ).execute(getCallback())
                     }
 
                     R.id.btn_item_pause_download -> {
@@ -129,6 +95,38 @@ class MultipleDownloadActivity : AppCompatActivity() {
         recycler_multiple_download.adapter = adapter
         (recycler_multiple_download.itemAnimator as SimpleItemAnimator).supportsChangeAnimations =
             false
+    }
+
+    private fun getCallback() = object : FileResultCallBack() {
+        override fun downloadFailed(error: OkError, filePath: String) {
+            error.exception?.printStackTrace()
+            Toast.makeText(
+                this@MultipleDownloadActivity,
+                "下载失败",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        override fun finish(file: File) {
+            Toast.makeText(
+                this@MultipleDownloadActivity,
+                "${file.name}下载完成",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        override fun downloadProgressOnMainThread(url: String, total: Long, current: Long) {
+            val percent = current / total.toDouble()
+            val realPercent = (percent * 100).toInt()
+            val adapterPosition = urlPositionMap[url]
+            if (adapterPosition != null) {
+                Log.e("download", "${url}\t\t${realPercent}")
+                val bean = beanList[adapterPosition]
+                bean.progress = realPercent
+                adapter.notifyItemChanged(adapterPosition)
+            }
+        }
+
     }
 
 

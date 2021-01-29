@@ -14,7 +14,7 @@ class UploadFileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_upload_file)
         OkSimple.uploadFile("", File("")).execute(object : GsonCallBack<String>() {
-            override fun getData(
+            override fun success(
                 data: String,
                 rawBodyString: String,
                 call: Call,

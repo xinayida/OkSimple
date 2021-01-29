@@ -23,8 +23,7 @@ abstract class BitmapResultCallBack : ResultCallBack() {
             OkSimple.mainHandler.post {
                 if (bitmap == null) {
                     failure(
-                        OkException(
-                            call,
+                        OkError(
                             IllegalArgumentException("BitmapFactory.decodeStream() function get null"), response
                         )
                     )
@@ -33,8 +32,7 @@ abstract class BitmapResultCallBack : ResultCallBack() {
                 }
             }
         } catch (e: Exception) {
-            OkSimple.mainHandler.post {
-                failure(OkException(call, e, response))
+            OkSimple.mainHandler.post { failure(OkError( e, response))
             }
         }
 

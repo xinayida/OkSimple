@@ -21,11 +21,10 @@ abstract class DataCallBack<E> : ResultCallBack() {
             val data = stringToData(preProcessBodyString(rawString))
             OkSimple.mainHandler.post {
                 if (data != null) {
-                    getData(data, rawString, call, response)
+                    success(data, rawString, call, response)
                 } else {
                     failure(
-                        OkException(
-                            call,
+                        OkError(
                             IllegalArgumentException("stringToData() function get null"), response
                         )
                     )
@@ -34,7 +33,7 @@ abstract class DataCallBack<E> : ResultCallBack() {
             }
         } catch (e: Exception) {
             OkSimple.mainHandler.post {
-                failure(OkException(call, e, response))
+                failure(OkError( e, response))
             }
         }
 
@@ -73,7 +72,7 @@ abstract class DataCallBack<E> : ResultCallBack() {
     }
 
 
-    abstract fun getData(data: E, rawBodyString: String, call: Call, response: Response)
+    abstract fun success(data: E, rawBodyString: String, call: Call, response: Response)
 
 
 }
